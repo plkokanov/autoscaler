@@ -17,10 +17,15 @@ limitations under the License.
 package logic
 
 import (
+	"encoding/json"
 	"math"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 )
 
 // TODO: Split the estimator to have a separate estimator object for CPU and memory.
@@ -53,6 +58,7 @@ type marginEstimator struct {
 type minResourcesEstimator struct {
 	minResources  model.Resources
 	baseEstimator ResourceEstimator
+	vpaKey        model.VpaID
 }
 
 type confidenceMultiplier struct {
@@ -79,8 +85,8 @@ func WithMargin(marginFraction float64, baseEstimator ResourceEstimator) Resourc
 
 // WithMinResources returns a given ResourceEstimator with minResources applied.
 // The returned resources are equal to the max(original resources, minResources)
-func WithMinResources(minResources model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &minResourcesEstimator{minResources, baseEstimator}
+func WithMinResources(minResources model.Resources, baseEstimator ResourceEstimator, vpaKey model.VpaID) ResourceEstimator {
+	return &minResourcesEstimator{minResources, baseEstimator, vpaKey}
 }
 
 // WithConfidenceMultiplier returns a given ResourceEstimator with confidenceMultiplier applied.
@@ -152,9 +158,32 @@ func (e *minResourcesEstimator) GetResourceEstimation(s *model.AggregateContaine
 	newResources := make(model.Resources)
 	for resource, resourceAmount := range originalResources {
 		if resourceAmount < e.minResources[resource] {
+			if resource == "memory" {
+				klog.Warningf("Computed %s resources for VPA %s were below minimum! Computed %v, minimum is %v.", resource, klog.KRef(e.vpaKey.Namespace, e.vpaKey.VpaName), resourceAmount, e.minResources[resource])
+				logHistogramInformation(s, e.vpaKey)
+				metrics_quality.ObserveLowerThanMinRecommendation(s.GetUpdateMode(), corev1.ResourceName(resource), e.vpaKey.Namespace+"/"+e.vpaKey.VpaName)
+			}
 			resourceAmount = e.minResources[resource]
 		}
 		newResources[resource] = resourceAmount
 	}
 	return newResources
+}
+
+func logHistogramInformation(s *model.AggregateContainerState, vpaKey model.VpaID) {
+	if s.AggregateCPUUsage == nil {
+		klog.Warning("Aggregate CPU usage has no metric samples, cannot show internal histogram data for VPA %s!", klog.KRef(vpaKey.Namespace, vpaKey.VpaName))
+		return
+	}
+	if s.AggregateMemoryPeaks == nil {
+		klog.Warning("Aggregate memory usage has no metric samples, cannot show internal histogram data for VPA %s!", klog.KRef(vpaKey.Namespace, vpaKey.VpaName))
+		return
+	}
+	c, _ := s.SaveToCheckpoint()
+	prettyCheckpoint, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		klog.Errorf("Error during marshalling checkpoint for VPA %s: %s", klog.KRef(vpaKey.Namespace, vpaKey.VpaName), err)
+		return
+	}
+	klog.Warningf("Here's the checkpoint/state for VPA %s: %s", klog.KRef(vpaKey.Namespace, vpaKey.VpaName), prettyCheckpoint)
 }
