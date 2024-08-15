@@ -104,16 +104,16 @@ vertical-pod-autoscaler:
         dockerimages:
           vpa-recommender:
             image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/autoscaler/vertical-pod-autoscaler/vpa-recommender
-            dockerfile: 'Dockerfile'
-            dir: 'vertical-pod-autoscaler/pkg/recommender'
+            dockerfile: 'pkg/recommender/Dockerfile'
+            dir: 'vertical-pod-autoscaler'
           vpa-updater:
             image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/autoscaler/vertical-pod-autoscaler/vpa-updater
-            dockerfile: 'Dockerfile'
-            dir: 'vertical-pod-autoscaler/pkg/updater'
+            dockerfile: 'pkg/updater/Dockerfile'
+            dir: 'vertical-pod-autoscaler'
           vpa-admission-controller:
             image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/autoscaler/vertical-pod-autoscaler/vpa-admission-controller
-            dockerfile: 'Dockerfile'
-            dir: 'vertical-pod-autoscaler/pkg/admission-controller'
+            dockerfile: 'pkg/admission-controller/Dockerfile'
+            dir: 'vertical-pod-autoscaler'
   jobs:
     release:
       traits:
