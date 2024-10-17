@@ -74,10 +74,14 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 	}
 
 	recommender := &podResourceRecommender{
-		WithMinResources(minResources, r.targetEstimator, vpaKey),
-		WithMinResources(minResources, r.lowerBoundEstimator, vpaKey),
-		WithMinResources(minResources, r.upperBoundEstimator, vpaKey),
+		WithMinResources(minResources, r.targetEstimator),
+		WithMinResources(minResources, r.lowerBoundEstimator),
+		WithMinResources(minResources, r.upperBoundEstimator),
 	}
+
+	recommender.targetEstimator.SetVpaKeyAndEstimatorName(vpaKey, targetEstimatorName)
+	recommender.upperBoundEstimator.SetVpaKeyAndEstimatorName(vpaKey, upperBoundEstimatorName)
+	recommender.lowerBoundEstimator.SetVpaKeyAndEstimatorName(vpaKey, lowerBoundEstimatorName)
 
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
 		recommendation[containerName] = recommender.estimateContainerResources(aggregatedContainerState)

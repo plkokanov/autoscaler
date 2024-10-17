@@ -106,8 +106,8 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
 		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
 	})
-	testedEstimator1 := &confidenceMultiplier{1.0, 1.0, baseEstimator}
-	testedEstimator2 := &confidenceMultiplier{1.0, -1.0, baseEstimator}
+	testedEstimator1 := &confidenceMultiplier{multiplier: 1.0, exponent: 1.0, baseEstimator: baseEstimator}
+	testedEstimator2 := &confidenceMultiplier{multiplier: 1.0, exponent: -1.0, baseEstimator: baseEstimator}
 	s := model.NewAggregateContainerState()
 	// Expect testedEstimator1 to return the maximum possible resource amount.
 	assert.Equal(t, model.ResourceAmount(1e14),

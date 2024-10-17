@@ -94,7 +94,7 @@ func (h *decayingHistogram) IsEmpty() bool {
 }
 
 func (h *decayingHistogram) String() string {
-	return fmt.Sprintf("referenceTimestamp: %v, halfLife: %v\n%s", h.referenceTimestamp, h.halfLife, h.histogram.String())
+	return fmt.Sprintf("referenceTimestamp: %v, halfLife: %v; %s", h.referenceTimestamp, h.halfLife, h.histogram.String())
 }
 
 func (h *decayingHistogram) shiftReferenceTimestamp(newreferenceTimestamp time.Time) {
