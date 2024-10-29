@@ -118,7 +118,7 @@ vertical-pod-autoscaler:
     release:
       traits:
         version:
-          preprocess: 'finalize'
+          preprocess: 'noop'
         component_descriptor:
           ocm_repository: europe-docker.pkg.dev/gardener-project/releases
         publish:
@@ -130,7 +130,7 @@ vertical-pod-autoscaler:
             vpa-admission-controller:
               image: europe-docker.pkg.dev/gardener-project/releases/gardener/autoscaler/vertical-pod-autoscaler/vpa-admission-controller
         release:
-          nextversion: 'bump_minor'
+          nextversion: 'noop'
           git_tags:
             - ref_template: refs/tags/vpa-{VERSION}
           on_tag_conflict: 'fail'
