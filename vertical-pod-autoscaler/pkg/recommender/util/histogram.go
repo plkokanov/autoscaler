@@ -184,17 +184,17 @@ func (h *histogram) IsEmpty() bool {
 
 func (h *histogram) String() string {
 	lines := []string{
-		fmt.Sprintf("minBucket: %d, maxBucket: %d, totalWeight: %.4f",
+		fmt.Sprintf("minBucket: %d, maxBucket: %d, totalWeight: %g",
 			h.minBucket, h.maxBucket, h.totalWeight),
 		"%-tile value: ",
 	}
 	for i := 0; i <= 100; i += 5 {
-		lines = append(lines, fmt.Sprintf("%d: %.4f", i, h.Percentile(0.01*float64(i))))
+		lines = append(lines, fmt.Sprintf("%d: %g", i, h.Percentile(0.01*float64(i))))
 	}
 
 	lines = append(lines, "buckets value")
 	for i := 0; i < h.options.NumBuckets(); i++ {
-		lines = append(lines, fmt.Sprintf("%d: %.4f", i, h.bucketWeight[i]))
+		lines = append(lines, fmt.Sprintf("%d: %g", i, h.bucketWeight[i]))
 	}
 
 	return strings.Join(lines, "; ")
